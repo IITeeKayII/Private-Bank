@@ -5,8 +5,8 @@ public Map<String, Client> accounts;
 
         public Bank() {
                 accounts = new HashMap<String ,Client>();
-                accounts.put("1", new Client("Coen", "1234", 500));
-                accounts.put("2", new Client("Kevin", "9876", 800));
+                accounts.put("1", new Client("Coen", "1234", 50000));
+                accounts.put("2", new Client("Kevin", "9876", 80000));
         }
         public Client get(String rekeningnummer){
                 if(accounts.containsKey(rekeningnummer)){
