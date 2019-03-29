@@ -7,6 +7,10 @@ public class ATM {
     ATMScreen as;
     Bank MyBank;
     CardReader cardReader = new CardReader("cardreader");
+    int KeyLocation;
+    int Row2 = 35;
+    int Row3 = 70;
+    boolean withdraw = false;
 
     ArrayList<InputDevice> KeyButtons;      //Keypad buttons
     ArrayList<InputDevice> Choice;          //Choice buttons after log in
@@ -17,9 +21,9 @@ public class ATM {
 
     private ScreenButton Withdraw, Deposit, GetBalance;
 
-    private ScreenButton W1000, W5000, W10000, W50000, W100000, W500000;
+    private ScreenButton W1000, W5000, W10000, W50000;
 
-    private ScreenButton Stop, Back;
+    private ScreenButton Stop, Back, Yes, No;
 
     private String pinInput = "";
     private Client client;
@@ -29,7 +33,7 @@ public class ATM {
     Keypad keypad = new Keypad("keypad");
 
     DisplayText displayText = new DisplayText("DisplayText", new Point(275, 200));
-    DisplayText ActionPin = new DisplayText("ActionPin", new Point(275, 75));
+    DisplayText ActionPin = new DisplayText("ActionPin", new Point(235, 75));
     DisplayText InOut = new DisplayText("InOut", new Point(350, 200));
     DisplayText amountText = new DisplayText("amountText", new Point(50, 100));
     public ATM(Bank bank) {
@@ -44,32 +48,37 @@ public class ATM {
         f.add(as);
         f.setVisible(true);
 
-        but0 = new ScreenButton("0", new Point(385, 255));
-        but1 = new ScreenButton("1", new Point(350, 150));
-        but2 = new ScreenButton("2", new Point(385, 150));
-        but3 = new ScreenButton("3", new Point(420, 150));
-        but4 = new ScreenButton("4", new Point(350, 185));
-        but5 = new ScreenButton("5", new Point(385, 185));
-        but6 = new ScreenButton("6", new Point(420, 185));
-        but7 = new ScreenButton("7", new Point(350, 220));
-        but8 = new ScreenButton("8", new Point(385, 220));
-        but9 = new ScreenButton("9", new Point(420, 220));
-        Correct = new ScreenButton("cor", new Point(320, 255));
-        OK = new ScreenButton("OK", new Point(420, 255));
+        if (withdraw == true){
+            KeyLocation = 100;
+        } else {
+            KeyLocation = 350;
+        }
+        but0 = new ScreenButton("0", new Point(KeyLocation + Row2, 255));
+        but1 = new ScreenButton("1", new Point(KeyLocation, 150));
+        but2 = new ScreenButton("2", new Point(KeyLocation + Row2, 150));
+        but3 = new ScreenButton("3", new Point(KeyLocation + Row3, 150));
+        but4 = new ScreenButton("4", new Point(KeyLocation, 185));
+        but5 = new ScreenButton("5", new Point(KeyLocation + Row2, 185));
+        but6 = new ScreenButton("6", new Point(KeyLocation + Row3, 185));
+        but7 = new ScreenButton("7", new Point(KeyLocation, 220));
+        but8 = new ScreenButton("8", new Point(KeyLocation + Row2, 220));
+        but9 = new ScreenButton("9", new Point(KeyLocation + Row3, 220));
+        Correct = new ScreenButton("cor", new Point(KeyLocation - 30, 255));
+        OK = new ScreenButton("OK", new Point(KeyLocation + Row3, 255));
 
         Withdraw = new ScreenButton("Withdraw", new Point(235, 200));
         Deposit = new ScreenButton("Deposit", new Point(420, 200));
         GetBalance = new ScreenButton("Get Balance", new Point(235, 255));
 
-        W1000 = new ScreenButton("1000", new Point(290, 180));
-        W5000 = new ScreenButton("5000", new Point(415, 180));
-        W10000 = new ScreenButton("10000", new Point(275, 215));
-        W50000 = new ScreenButton("50000", new Point(415, 215));
-        W100000 = new ScreenButton("100000", new Point(260, 250));
-        W500000 = new ScreenButton("500000", new Point(415, 250));
+        W1000 = new ScreenButton("1000", new Point(455, 150));
+        W5000 = new ScreenButton("5000", new Point(455, 185));
+        W10000 = new ScreenButton("10000", new Point(455, 220));
+        W50000 = new ScreenButton("50000", new Point(455, 255));
 
         Stop = new ScreenButton("Stop", new Point(620, 400));
-        Back = new ScreenButton("Back", new Point(580, 400));
+        Back = new ScreenButton("Back", new Point(530, 400));
+        Yes = new ScreenButton("Yes", new Point(530, 400));
+        No = new ScreenButton("No", new Point(580, 400));
 
         KeyButtons = new ArrayList<>();
         KeyButtons.add(but0);
@@ -96,25 +105,25 @@ public class ATM {
         AmountWithdraw.add(W5000);
         AmountWithdraw.add(W10000);
         AmountWithdraw.add(W50000);
-        AmountWithdraw.add(W100000);
-        AmountWithdraw.add(W500000);
 
         Actions = new ArrayList<>();
         Actions.add(Stop);
         Actions.add(Back);
+        Actions.add(Yes);
+        Actions.add(No);
 
 
         doTransactions();
     }
 
     private void doTransactions() {
-        pinMode = false;
         pinLength = 0;
         pinInput = "";
         checkCard();
     }
 
     private void checkCard() {
+        as.clear();
         displayText.giveOutput("Please insert your card");
         as.add(displayText);
         String cardnumber = cardReader.getInput();
@@ -132,21 +141,25 @@ public class ATM {
     }
 
     private void login() {
+        as.clear();
         ActionPin.giveOutput("Please enter your pin: ");
         as.add(ActionPin);
         pinMode = true;
         pinCheck();
+
     }
 
     private void welcome() {
+        as.clear();
+        pinMode = false;
         InOut.giveOutput("Welcome " + client.getName());
         as.add(InOut);
         sleep(2);
-        as.clear();
         home();
     }
 
     private void home() {
+        as.clear();
         ActionPin.giveOutput("Choose an action");
         as.add(ActionPin);
         addElement("Choice");
@@ -156,10 +169,23 @@ public class ATM {
             } else if (Deposit.getInput() == "Deposit") {
                 deposit();
             } else if (GetBalance.getInput() == "Get Balance") {
-                amountText.giveOutput("Your balance is: " + client.getBalance(pinInput));
-                as.add(amountText);
-                home();
+                getBalance();
             } else if (Stop.getInput() == "Stop") {
+                goodbye();
+            }
+        }
+    }
+
+    private void getBalance(){
+        as.clear();
+        amountText.giveOutput("Your balance is: " + client.getBalance(pinInput));
+        as.add(amountText);
+        as.add(Back);
+        as.add(Stop);
+        while (true){
+            if (Back.getInput() == "Back"){
+                home();
+            } else if (Stop.getInput() == "Stop"){
                 goodbye();
             }
         }
@@ -167,47 +193,106 @@ public class ATM {
 
     private void withdraw() {
         as.clear();
+        withdraw = true;
         ActionPin.giveOutput("Choose amount to withdraw");
         as.add(ActionPin);
+        addElement("Keypad");
         addElement("Withdraw");
-        String temp;
-        int Amount = 0;
-        while (Amount < client.getBalance(pinInput)) {
+        String s = "";
+        int Amount;
+        while (true) {
             for (int i = 0; i < AmountWithdraw.size(); i++) {
-                temp = AmountWithdraw.get(i).getInput();
-                if (temp == "1000"){
+                String temp = AmountWithdraw.get(i).getInput();
+                if (temp == "1000") {
                     Amount = 1000;
-                } else if (temp == "5000"){
+                    FinishWithdraw(Amount);
+                } else if (temp == "5000") {
                     Amount = 5000;
-                } else if (temp == "10000"){
+                    FinishWithdraw(Amount);
+                } else if (temp == "10000") {
                     Amount = 10000;
-                } else if (temp == "50000"){
+                    FinishWithdraw(Amount);
+                } else if (temp == "50000") {
                     Amount = 50000;
-                } else if (temp == "100000"){
-                    Amount = 100000;
-                } else if (temp == "500000"){
-                    Amount = 500000;
+                    FinishWithdraw(Amount);
                 }
-                if (Stop.getInput() == "Stop") {
-                    goodbye();
-                } else if (Back.getInput() == "Back") {
-                    home();
-                }
-                displayText.giveOutput("You've withdrawn" + temp);
-                as.add(displayText);
-                client.Withdraw(Amount, pinInput);
-                sleep(1);
-                as.clear();
-                displayText.giveOutput("Your new balance is: " + client.getBalance(pinInput));
-                sleep(3);
-                doTransactions();
 
+            }
+            for (int i = 0; i < KeyButtons.size(); i++){
+                String temp = KeyButtons.get(i).getInput();
+                if(temp != null){
+                    s += temp;
+                }
+
+            }
+            if (Stop.getInput() == "Stop") {
+                goodbye();
+            } else if (Back.getInput() == "Back") {
+                as.clear();
+                home();
+            } else if (OK.getInput() == "OK"){
+                Amount = Integer.parseInt(s);
+                FinishWithdraw(Amount);
             }
         }
     }
+    private void FinishWithdraw(int Pressed){
+        if (Pressed <= client.getBalance(pinInput)) {
+            String temp = Integer.toString(Pressed);
+            as.clear();
+            displayText.giveOutput("You've withdrawn " + temp);
+            as.add(displayText);
+            client.Withdraw(Pressed, pinInput);
+            sleep(2);
+            as.clear();
+            displayText.giveOutput("Your new balance is: " + client.getBalance(pinInput));
+            as.add(displayText);
+            sleep(3);
+            goodbye();
+        } else {
+            as.clear();
+            displayText.giveOutput("Balance is too low!");
+            as.add(displayText);
+            sleep(3);
+            withdraw();
+        }
+
+
+    }
 
     private void deposit() {
-
+        as.clear();
+        ActionPin.giveOutput("Please enter amount to deposit: ");
+        addElement("Keypad");
+        String s = "";
+        as.add(ActionPin);
+        as.add(OK);
+        as.add(Back);
+        as.add(Stop);
+        as.add(Correct);
+        while (true){
+            for (int i = 0; i < KeyButtons.size(); i++ ) {
+                String temp = KeyButtons.get(i).getInput();
+                if (temp != null){
+                    s += temp;
+                }
+            }
+            if (OK.getInput() == "OK"){
+                as.clear();
+                int toDeposit = Integer.parseInt(s);
+                client.Deposit(toDeposit);
+                displayText.giveOutput("Your new saldo is: "+ client.getBalance(pinInput));
+                as.add(displayText);
+                sleep(2);
+                goodbye();
+            } else if (Back.getInput() == "Back"){
+                home();
+            } else if (Stop.getInput() == "Stop"){
+                goodbye();
+            } else if (Correct.getInput() == "cor"){
+                s = "";
+            }
+        }
     }
 
     private void goodbye() {
@@ -239,8 +324,6 @@ public class ATM {
             as.add(W5000);
             as.add(W10000);
             as.add(W50000);
-            as.add(W100000);
-            as.add(W500000);
             as.add(Stop);
             as.add(Back);
         } else if (Type == "Choice"){
@@ -283,7 +366,7 @@ public class ATM {
                         } else if (pinLength == 4) {
                             amountText.giveOutput("Amount of numbers entered:      *  *  *  *");
                         } else {
-                            amountText.giveOutput("");
+                            amountText.giveOutput("Amount of numbers entered:                ");
                         }
                     }
                 }
@@ -294,8 +377,9 @@ public class ATM {
                 } else if (Back.getInput() == "back") {
                     as.clear();
                     home();
-                } else if (Correct.getInput() == "Cor"){
+                } else if (Correct.getInput() == "cor"){
                     pinLength = 0;
+                    pinInput = "";
                     s = "";
                 }
             }
@@ -308,14 +392,12 @@ public class ATM {
         addElement("Keypad");
         String temp = buttonInput();
         if (client.checkPin(temp)){
-            as.clear();
             welcome();
         } else {
             as.clear();
             displayText.giveOutput("Wrong pin entered");
             as.add(displayText);
             sleep(2);
-            as.clear();
             login();
         }
 

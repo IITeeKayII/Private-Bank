@@ -35,11 +35,16 @@ public class Client {
     }
     public boolean Withdraw(int ToWithdraw, String pin){
         checkPin(this.pin);
-        if (checkPin(this.pin) == true && balance > ToWithdraw){
+        if (checkPin(this.pin) == true && balance >= ToWithdraw){
             balance = balance - ToWithdraw;
             return true;
-        } else{
+        } else if(checkPin(this.pin) == false){
             System.out.println("Pin incorrect");
+            return false;
+        } else if (balance < ToWithdraw){
+            System.out.println("Balance too low");
+            return false;
+        }else {
             return false;
         }
     }
