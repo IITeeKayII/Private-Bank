@@ -1,4 +1,4 @@
-public class HardwareElement extends ATMElement {
+public abstract class HardwareElement extends ATMElement {
     public HardwareElement(String Name) {
         super(Name);
     }
