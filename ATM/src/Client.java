@@ -31,7 +31,8 @@ public class Client {
         }
     }
     public void Deposit(int deposited){
-    balance = balance + deposited;
+            balance = balance + deposited;
+
     }
     public boolean Withdraw(int ToWithdraw, String pin){
         checkPin(this.pin);
