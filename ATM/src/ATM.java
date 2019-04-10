@@ -186,6 +186,7 @@ public class ATM {
 
     private void withdraw() {
         as.clear();
+        pinMode = 0;
         KeyLocation = 200; //set location of keypad to x=200
         ActionPin.giveOutput("Choose amount to withdraw");
         as.add(ActionPin);
@@ -205,15 +206,13 @@ public class ATM {
                 } else if (temp == "50000"){
                     FinishWithdraw(temp);
                 } else if (temp == "Other Amount"){
+                    pinMode = 2;
                     as.clear();
                     ActionPin.giveOutput("Please enter amount: ");
                     as.add(ActionPin);
-                    pinMode = 2;
                     addElement("Keypad");
                     as.add(Back);
                     s = buttonInput(); //check keypad button input and store in s
-                    amountText.giveOutput("Entered amount: €" + s);
-                    as.add(amountText);
                     if (s.length() < 12){
                         FinishWithdraw(s);
                     } else {
@@ -396,10 +395,9 @@ public class ATM {
         while(true) {
             for (int i = 0; i < KeyButtons.size(); i++ ) { //cycle through the keypad buttons to check if pressed
                 String temp = KeyButtons.get(i).getInput();
-
                 if (temp != null) {
                     s += temp;
-                    if(pinMode == 1) {
+                    if (pinMode == 1) {
                         pinLength++;
                         System.out.println(pinLength);
                         if (pinLength == 1) {
@@ -414,27 +412,27 @@ public class ATM {
                             amountText.giveOutput("");
                         }
                         as.add(amountText); //print a star for each number added
-                    }else if (pinMode == 0){
+                    }
+                } else if (pinMode == 2) {
+                    if (temp != null){
+                        s += temp;
                         amountText.giveOutput("Entered amount: €" + s);
                         as.add(amountText);
-                         if (Back.getInput() == "back") { //return to previous screen being home
-                             as.clear();
-                             home();
-                         }
-                    } else if (pinMode == 2){
-                        amountText.giveOutput("Entered amount: €" + s);
-                        as.add(amountText);
-                        if (Back.getInput() == "back"){
-                            as.clear();
-                            withdraw();
-                        }
+                    } else if (Back.getInput() == "Back") {
+                        s = "";
+                        withdraw();
+                    }
+                } else {
+                    if (Back.getInput() == "Back") {
+                        s = "";
+                        home();
                     }
                 }
                 if (OK.getInput() == "OK") { //return pressed keys when OK is pressed
                     return s;
                 } else if (Stop.getInput() == "Stop") { //restart the atm if pressed
                     goodbye();
-                } else if (Correct.getInput() == "cor"){ //clear all inputs
+                }else if (Correct.getInput() == "cor") { //clear all inputs
                     pinLength = 0;
                     pinInput = "";
                     s = "";

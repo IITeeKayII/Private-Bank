@@ -14,43 +14,41 @@ public class Client {
     }
 
     public boolean checkPin(String pin) {
-        if (this.pin.equals(pin)) {
+        if (this.pin.equals(this.pin)) {
             System.out.println("Pin Correct");
             return true;
-        } else{
+        } else {
             System.out.println("Pin incorrect");
             return false;
         }
     }
 
     public int getBalance(String pin) {
-        if (checkPin(this.pin) == true) {
+        if (checkPin(pin) == true) {
             return balance;
         } else {
             return Integer.MIN_VALUE;
         }
     }
-    public void Deposit(int deposited){
-            balance = balance + deposited;
+
+    public void Deposit(int deposited) {
+        balance = balance + deposited;
 
     }
-    public boolean Withdraw(int ToWithdraw, String pin){
+
+    public boolean Withdraw(int ToWithdraw, String pin) {
         checkPin(this.pin);
-        if (checkPin(this.pin) == true && balance >= ToWithdraw){
+        if (checkPin(this.pin) == true && balance >= ToWithdraw) {
             balance = balance - ToWithdraw;
             return true;
-        } else if(checkPin(this.pin) == false){
+        } else if (checkPin(this.pin) == false) {
             System.out.println("Pin incorrect");
             return false;
-        } else if (balance < ToWithdraw){
+        } else if (balance < ToWithdraw) {
             System.out.println("Balance too low");
             return false;
-        }else {
+        } else {
             return false;
         }
-    }
-
-    public String getPin() {
-        return pin;
     }
 }
