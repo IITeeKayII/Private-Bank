@@ -149,6 +149,7 @@ public class ATM {
 
     private void home() {
         as.clear();
+        pinMode = 0;
         ActionPin.giveOutput("Choose an action");
         as.add(ActionPin);
         addElement("Choice"); //choose action, while true to always keep looping
@@ -187,7 +188,6 @@ public class ATM {
     private void withdraw() {
         as.clear();
         pinMode = 0;
-        KeyLocation = 200; //set location of keypad to x=200
         ActionPin.giveOutput("Choose amount to withdraw");
         as.add(ActionPin);
         addElement("Withdraw");
@@ -284,7 +284,7 @@ public class ATM {
 
     private void deposit() {
         as.clear();
-        KeyLocation = 350; //set keypad location to x=350
+        pinMode = 0;
         ActionPin.giveOutput("Please enter amount to deposit: ");
 
         addElement("Keypad"); //quickadd the keypad
@@ -397,6 +397,8 @@ public class ATM {
                 String temp = KeyButtons.get(i).getInput();
                 if (temp != null) {
                     s += temp;
+                    amountText.giveOutput("Entered amount: €" + s);
+                    as.add(amountText);
                     if (pinMode == 1) {
                         pinLength++;
                         System.out.println(pinLength);
@@ -414,15 +416,11 @@ public class ATM {
                         as.add(amountText); //print a star for each number added
                     }
                 } else if (pinMode == 2) {
-                    if (temp != null){
-                        s += temp;
-                        amountText.giveOutput("Entered amount: €" + s);
-                        as.add(amountText);
-                    } else if (Back.getInput() == "Back") {
+                    if (Back.getInput() == "Back") {
                         s = "";
                         withdraw();
                     }
-                } else {
+                } else if(pinMode == 0){
                     if (Back.getInput() == "Back") {
                         s = "";
                         home();
