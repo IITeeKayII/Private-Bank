@@ -14,7 +14,7 @@ public class Client {
     }
 
     public boolean checkPin(String pin) {
-        if (this.pin.equals(this.pin)) {
+        if (this.pin.equals(pin)) {
             System.out.println("Pin Correct");
             return true;
         } else {
@@ -37,11 +37,11 @@ public class Client {
     }
 
     public boolean Withdraw(int ToWithdraw, String pin) {
-        checkPin(this.pin);
-        if (checkPin(this.pin) == true && balance >= ToWithdraw) {
+        checkPin(pin);
+        if (checkPin(pin) == true && balance >= ToWithdraw) {
             balance = balance - ToWithdraw;
             return true;
-        } else if (checkPin(this.pin) == false) {
+        } else if (checkPin(pin) == false) {
             System.out.println("Pin incorrect");
             return false;
         } else if (balance < ToWithdraw) {

@@ -32,4 +32,9 @@ public class ScreenButton extends ScreenElement implements InputDevice, java.awt
         inputAvailable = true;
         System.out.println(Name);
     }
+
+    public void setColor(String color){
+        Color myColor = Color.decode(color);
+        button.setBackground(myColor);
+    }
 }
