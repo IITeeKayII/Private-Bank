@@ -108,6 +108,7 @@ public class ATM {
         pinLength = 0;
         pinInput = "";
         KeyLocation = 350;
+        arduino.openPort();
         checkCard();
     }
 
@@ -116,24 +117,29 @@ public class ATM {
     private void checkCard() {
         //clear screen
         as.clear();
-        String cardnumber = null;
+        String cardnumber;
         displayText.giveOutput("Please insert your card");
         as.add(displayText);
-        while ( cardnumber == null){
+        while (true){
             arduino.listenSerial(); //Start listening
-            cardnumber = arduino.getData(); //check input
-            if (cardnumber.length() > 1){
+            cardnumber = arduino.getRFID(); //check input
+            while (cardnumber.length() > 1){
                 System.out.println(cardnumber);
                 client = MyBank.get(cardnumber);
-                login();
-            } else if(cardnumber.length() > 0 && cardnumber.length() <= 1) {
-                as.clear(); // else retry
-                displayText.giveOutput("Card unknown");
-                as.add(displayText);
-                sleep(3);
-                doTransactions();
+                if(client == null){
+                    as.clear(); // else retry
+                    displayText.giveOutput("Card unknown");
+                    as.add(displayText);
+                    cardnumber = null;
+                    client = null;
+                    sleep(3);
+                    doTransactions();
+                } else {
+                    login();
+                }
             }
         }
+
     }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
