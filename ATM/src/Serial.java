@@ -7,7 +7,7 @@ public class Serial {
 	private String RFID = "";
 	private String receivedData;
 
-	static SerialPort serialPort = SerialPort.getCommPort("COM9");
+	static SerialPort serialPort = SerialPort.getCommPort("COM5");
 	private SerialPort[] portList;
 	private Scanner scanner;
 
@@ -68,7 +68,7 @@ public class Serial {
 		//System.out.println("setvalue method");
 		if (data.length() > 1) {
 			RFID = data;
-			//System.out.println("in serial.java: " + RFID);
+			System.out.println("in serial.java: " + RFID);
 		} else if (data.length() == 1) {
 			key = data;
 //			System.out.println(key);

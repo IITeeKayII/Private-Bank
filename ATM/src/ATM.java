@@ -23,7 +23,10 @@ public class ATM {
 
     private Serial arduino = new Serial(); //Call Serial constructor
 
+    private String cutPin2;
     private String pinInput = "";
+    private String cardnumber = "";
+    private String Key;
     private Client client;
     private Timestamp timestamp;
     private int pinLength;
@@ -109,6 +112,7 @@ public class ATM {
         pinInput = "";
         KeyLocation = 350;
         arduino.openPort();
+        arduino.listenSerial(); //Start listening
         checkCard();
     }
 
@@ -117,13 +121,13 @@ public class ATM {
     private void checkCard() {
         //clear screen
         as.clear();
-        String cardnumber;
+        cardnumber = "";
         displayText.giveOutput("Please insert your card");
         as.add(displayText);
         while (true){
             arduino.listenSerial(); //Start listening
             cardnumber = arduino.getRFID(); //check input
-            while (cardnumber.length() > 1){
+            if (!cardnumber.isEmpty()){
                 System.out.println(cardnumber);
                 client = MyBank.get(cardnumber);
                 if(client == null){
@@ -132,8 +136,8 @@ public class ATM {
                     as.add(displayText);
                     cardnumber = null;
                     client = null;
-                    sleep(3);
-                    doTransactions();
+                    sleep(3000);
+                    checkCard();
                 } else {
                     login();
                 }
@@ -151,6 +155,11 @@ public class ATM {
         pinMode = 1;
         pinCheck();
 
+        if (pinLength == 0){
+            amountText.giveOutput("Amount of numbers entered: ");
+            as.add(amountText);
+        }
+
     }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -160,7 +169,7 @@ public class ATM {
         pinMode = 0; //give welcome text
         InOut.giveOutput("Welcome " + client.getName());
         as.add(InOut);
-        sleep(2); //go to sleep for 2 seconds before continuing on
+        sleep(2000); //go to sleep for 2 seconds before continuing on
         home();
     }
 
@@ -170,18 +179,22 @@ public class ATM {
         ActionPin.giveOutput("Choose an action");
         as.add(ActionPin);
         addElement("Choice"); //choose action, while true to always keep looping
-        while (true){
-            if (Withdraw.getInput() == "Withdraw") {
-                withdraw();
-            } else if (Deposit.getInput() == "Deposit") {
-                deposit();
-            } else if (GetBalance.getInput() == "Get Balance") {
-                getBalance();
-            } else if (quickWith.getInput() == "Quick 5000"){
-                FinishWithdraw("5000");
-            } else if (Stop.getInput() == "Stop") {
-                goodbye();
+        try {
+            while (true){
+                if (Withdraw.getInput().equals("Withdraw")) {
+                    withdraw();
+                } else if (Deposit.getInput().equals("Deposit")) {
+                    deposit();
+                } else if (GetBalance.getInput().equals("Get Balance")) {
+                    getBalance();
+                } else if (quickWith.getInput().equals("Quick 5000")){
+                    FinishWithdraw("5000");
+                } else if (Stop.getInput().equals("Stop")) {
+                    goodbye();
+                }
             }
+        }catch (Exception e){
+            return;
         }
     }
 
@@ -240,14 +253,14 @@ public class ATM {
                         as.clear();
                         displayText.giveOutput("no amount entered");
                         as.add(displayText);
-                        sleep(2);
+                        sleep(2000);
                         withdraw();
                     } else {
                         as.clear();
                         s = "";
                         displayText.giveOutput("Balance too low");
                         as.add(displayText);
-                        sleep(2);
+                        sleep(2000);
                         withdraw();
                     }
                 }
@@ -277,22 +290,22 @@ public class ATM {
                     displayText.giveOutput("now dispensing €" + temp);
                     as.add(displayText);
                     client.Withdraw(temp, pinInput); //perform the withdrawl
-                    sleep(2); //set screen for 2 seconds before wiping it
+                    sleep(2000); //set screen for 2 seconds before wiping it
                     as.clear();
                     displayText.giveOutput("Your new balance is: €" + client.getBalance(pinInput)); //print new balance
                     as.add(displayText);
-                    sleep(3); //set screen for 3 seconds before turning off atm
+                    sleep(3000); //set screen for 3 seconds before turning off atm
                     goodbye();
                 } else if (No.getInput() == "No"){ //only dispense money
                     as.clear();
                     displayText.giveOutput("now dispensing €" + temp);
                     as.add(displayText);
                     client.Withdraw(temp, pinInput); //perform withdrawl
-                    sleep(2); //set screen for 2 seconds before wiping ir
+                    sleep(2000); //set screen for 2 seconds before wiping ir
                     as.clear();
                     displayText.giveOutput("Your new balance is: €" + client.getBalance(pinInput)); //print new balance
                     as.add(displayText);
-                    sleep(3); //set screen for 3 seconds before turning off the atm
+                    sleep(3000); //set screen for 3 seconds before turning off the atm
                     goodbye();
                 }
             }
@@ -300,7 +313,7 @@ public class ATM {
             as.clear();
             displayText.giveOutput("Balance is too low!"); //enter new amount if balance isn't enough for withdrawl
             as.add(displayText);
-            sleep(3);
+            sleep(3000);
             withdraw();
         }
 
@@ -323,7 +336,7 @@ public class ATM {
         displayText.giveOutput("Your new saldo is: "+ client.getBalance(pinInput));
         as.add(displayText);
 
-        sleep(2); //sleep for 2 seconds before wiping screen
+        sleep(2000); //sleep for 2 seconds before wiping screen
         goodbye();
     }
 
@@ -333,7 +346,7 @@ public class ATM {
         as.clear(); //clear screen
         InOut.giveOutput("Goodbye!");
         as.add(InOut); //give output goodbye
-        sleep(3); //sleep for 3 seconds
+        sleep(3000); //sleep for 3 seconds
         as.clear();
         doTransactions(); //return to doTransactions to simulate a restart
     }
@@ -412,7 +425,7 @@ public class ATM {
 
     private void sleep(int time) {
         try {
-            TimeUnit.SECONDS.sleep(time); //sleep for given amount of seconds
+            TimeUnit.MILLISECONDS.sleep(time); //sleep for given amount of seconds
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -424,50 +437,70 @@ public class ATM {
         String s = "";
         as.add(OK);
         while(true) {
-            for (int i = 0; i < KeyButtons.size(); i++ ) { //cycle through the keypad buttons to check if pressed
-                String temp = KeyButtons.get(i).getInput();
-                if (temp != null) {
-                    s += temp;
-                    amountText.giveOutput("Entered amount: €" + s);
-                    as.add(amountText);
-                    if (pinMode == 1) {
-                        pinLength++;
-                        System.out.println(pinLength);
-                        if (pinLength == 1) {
-                            amountText.giveOutput("Amount of numbers entered:      *");
-                        } else if (pinLength == 2) {
-                            amountText.giveOutput("Amount of numbers entered:      *  *");
-                        } else if (pinLength == 3) {
-                            amountText.giveOutput("Amount of numbers entered:      *  *  *");
-                        } else if (pinLength == 4) {
-                            amountText.giveOutput("Amount of numbers entered:      *  *  *  *");
-                        } else {
-                            amountText.giveOutput("");
-                        }
-                        as.add(amountText); //print a star for each number added
-                    }
-                } else if (pinMode == 2) {
-                    if (Back.getInput() == "Back") {
-                        s = "";
-                        withdraw();
-                    }
-                } else if(pinMode == 0){
-                    if (Back.getInput() == "Back") {
-                        s = "";
-                        home();
-                    }
-                }
-                if (OK.getInput() == "OK") { //return pressed keys when OK is pressed
-                    return s;
-                } else if (Stop.getInput() == "Stop") { //restart the atm if pressed
-                    goodbye();
-                }else if (Correct.getInput() == "cor") { //clear all inputs
+            arduino.listenSerial();
+            Key = arduino.getKey();
+
+            if (Stop.getInput() == "Stop"){
+                goodbye();
+            }
+            if (!Key.isEmpty()) {
+                pinInput += Key;
+                pinLength++;
+                arduino.resetKey();
+                pinMode = 1;
+                if (Key.equals("*")) {
                     pinLength = 0;
                     pinInput = "";
+
+                }
+            }
+            if (pinInput.contains("#")) {
+                StringBuffer cutPin = new StringBuffer(pinInput);
+                cutPin.deleteCharAt(cutPin.length() - 1);
+                cutPin2 = cutPin.toString();
+                pinInput = "";
+                return cutPin2;
+            }
+            if (pinMode == 1) {
+                for (int i = 0; i < KeyButtons.size(); i++) { //cycle through the keypad buttons to check if pressed
+                    String temp = KeyButtons.get(i).getInput();
+                    if (temp != null) {
+                        s += temp;
+                    }
+                    if (OK.getInput() == "OK") { //return pressed keys when OK is pressed
+                        return s;
+                    } else if (Stop.getInput() == "Stop") { //restart the atm if pressed
+                        goodbye();
+                    } else if (Correct.getInput() == "cor") { //clear all inputs
+                        pinLength = 0;
+                        pinInput = "";
+                        s = "";
+                    }
+                }
+            }if (pinMode == 1){
+                if (pinLength == 1) {
+                    amountText.giveOutput("Amount of numbers entered:      *");
+                } else if (pinLength == 2) {
+                    amountText.giveOutput("Amount of numbers entered:      *  *");
+                } else if (pinLength == 3) {
+                    amountText.giveOutput("Amount of numbers entered:      *  *  *");
+                } else if (pinLength == 4) {
+                    amountText.giveOutput("Amount of numbers entered:      *  *  *  *");
+                }
+                as.add(amountText); //print a star for each number added
+            } else if (pinMode == 2) {
+                if (Back.getInput() == "Back") {
                     s = "";
+                    withdraw();
+                }
+            } else if(pinMode == 0) {
+                if (Back.getInput() == "Back") {
+                    s = "";
+                    home();
                 }
             }
         }
+
     }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -484,7 +517,7 @@ public class ATM {
             pinInput = "";
             pinLength = 0;
             as.add(displayText);
-            sleep(2);
+            sleep(2000);
             login();
         }
 
